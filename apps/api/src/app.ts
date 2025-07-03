@@ -4,10 +4,10 @@ import { cors } from 'hono/cors';
 import { errorHandler } from './utils/error';
 import testRoutes, { testRoute } from './routes/test';
 import { OpenAPIHono } from '@hono/zod-openapi';
+import messageRoutes from './routes/message';
 
 const app = new OpenAPIHono();
 
-app.openapi(testRoute, testRoute.handler);
 
 // Serve OpenAPI JSON and Swagger UI
 app.doc('/docs', {
@@ -45,5 +45,7 @@ app.get('/swagger', (c: Context) => {
 
 app.use('*', logger(), cors()); // Enable CORS and logging   // Mount test + health routes
 app.onError(errorHandler);      // Central error handler
+app.openapi(testRoute, testRoute.handler);
+app.route('/messages', messageRoutes);
 
 export default app;
