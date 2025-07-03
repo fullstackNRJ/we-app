@@ -17,6 +17,7 @@ const CreateMessageSchema = z.object({
 
 // create a new route
  const getMessagesRoute = createRoute({
+  tags: ['messages'],
   method: 'get',
   path: '/',
   responses: {
@@ -36,6 +37,7 @@ const CreateMessageSchema = z.object({
 });
 
  const createMessageRoute = createRoute({
+  tags: ['messages'],
   method: 'post',
   path: '/',
   request: {
