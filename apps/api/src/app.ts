@@ -5,6 +5,7 @@ import { errorHandler } from './utils/error';
 import testRoutes, { testRoute } from './routes/test';
 import { OpenAPIHono } from '@hono/zod-openapi';
 import messageRoutes from './routes/message';
+import authRoutes from './routes/auth';
 
 const app = new OpenAPIHono();
 
@@ -47,5 +48,6 @@ app.use('*', logger(), cors()); // Enable CORS and logging   // Mount test + hea
 app.onError(errorHandler);      // Central error handler
 app.openapi(testRoute, testRoute.handler);
 app.route('/messages', messageRoutes);
+app.route('/auth', authRoutes);
 
 export default app;
