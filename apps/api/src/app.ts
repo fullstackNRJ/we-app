@@ -6,6 +6,7 @@ import testRoutes, { testRoute } from './routes/test';
 import { OpenAPIHono } from '@hono/zod-openapi';
 import messageRoutes from './routes/message';
 import authRoutes from './routes/auth';
+import budgetRoutes from './routes/budget';
 
 const app = new OpenAPIHono();
 
@@ -55,6 +56,7 @@ app.onError(errorHandler);      // Central error handler
 app.openapi(testRoute, testRoute.handler);
 app.route('/messages', messageRoutes);
 app.route('/auth', authRoutes);
+app.route('/budget', budgetRoutes);
 
 app.openAPIRegistry.registerComponent('securitySchemes', 'bearerAuth', {
   type: 'http',
