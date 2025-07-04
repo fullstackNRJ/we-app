@@ -19,6 +19,12 @@ app.doc('/docs', {
   },
 });
 
+app.openAPIRegistry.registerComponent('securitySchemes', 'bearerAuth', {
+  type: 'http',
+  scheme: 'bearer',
+  bearerFormat: 'JWT',
+});
+
 
 app.get('/swagger', (c: Context) => {
   const html = `
@@ -49,5 +55,11 @@ app.onError(errorHandler);      // Central error handler
 app.openapi(testRoute, testRoute.handler);
 app.route('/messages', messageRoutes);
 app.route('/auth', authRoutes);
+
+app.openAPIRegistry.registerComponent('securitySchemes', 'bearerAuth', {
+  type: 'http',
+  scheme: 'bearer',
+  bearerFormat: 'JWT',
+});
 
 export default app;

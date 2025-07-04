@@ -1,5 +1,6 @@
 import { OpenAPIHono, z, createRoute } from '@hono/zod-openapi';
-import { register, login, refreshToken } from '../services/authService';
+import { register, login, refreshToken, generateInviteCode } from '../services/authService';
+import { requireAuth } from '../utils/authMiddleware';
 import { Context } from 'hono';
 
 const authRoutes = new OpenAPIHono();
@@ -7,6 +8,7 @@ const authRoutes = new OpenAPIHono();
 const UserSchema = z.object({
   id: z.string(),
   name: z.string(),
+  role: z.enum(['admin', 'user']),
 });
 
 const RegisterRequestSchema = z.object({
@@ -14,6 +16,7 @@ const RegisterRequestSchema = z.object({
   name: z.string(),
   phone: z.string(),
   pin: z.string().min(4).max(4),
+  role: z.enum(['admin', 'user']).optional(),
 });
 
 const LoginRequestSchema = z.object({
@@ -36,6 +39,8 @@ const RefreshTokenResponseSchema = z.object({
 });
 
 const ErrorResponseSchema = z.object({ error: z.string() });
+
+const GenerateInviteResponseSchema = z.object({ inviteCode: z.string() });
 
 const registerRoute = createRoute({
   tags: ['auth'],
@@ -130,8 +135,39 @@ const refreshTokenRoute = createRoute({
   },
 });
 
+const generateInviteRoute = createRoute({
+  tags: ['auth'],
+  method: 'post',
+  path: '/generate-invite',
+  security: [{ bearerAuth: [] }],
+  responses: {
+    200: { description: 'Invite code generated', content: { 'application/json': { schema: GenerateInviteResponseSchema } } },
+    403: { description: 'Forbidden', content: { 'application/json': { schema: ErrorResponseSchema } } },
+    401: { description: 'Unauthorized', content: { 'application/json': { schema: ErrorResponseSchema } } },
+  },
+  handler: async (c: Context) => {
+    // Manually check auth and role
+    const authHeader = c.req.header('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+    const token = authHeader.split(' ')[1];
+    try {
+      const payload = require('../utils/jwt').verifyAccessToken(token) as { id: string; name: string; role?: string };
+      if (!payload.role || payload.role !== 'admin') {
+        return c.json({ error: 'Forbidden' }, 403);
+      }
+      const inviteCode = await generateInviteCode();
+      return c.json({ inviteCode: inviteCode || '' }, 200);
+    } catch (e) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+  },
+});
+
 authRoutes.openapi(registerRoute, registerRoute.handler);
 authRoutes.openapi(loginRoute, loginRoute.handler);
 authRoutes.openapi(refreshTokenRoute, refreshTokenRoute.handler);
+authRoutes.openapi(generateInviteRoute, generateInviteRoute.handler);
 
 export default authRoutes; 

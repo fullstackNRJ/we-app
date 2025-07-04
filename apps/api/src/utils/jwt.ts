@@ -4,8 +4,8 @@ import { env } from '../config/env';
 const ACCESS_SECRET = env.JWT_SECRET + '_access';
 const REFRESH_SECRET = env.JWT_SECRET + '_refresh';
 
-export function signAccessToken(user: { id: string; name: string }) {
-  return jwt.sign(user, ACCESS_SECRET, { expiresIn: '15m' });
+export function signAccessToken(user: { id: string; name: string; role: string }) {
+  return jwt.sign({ id: user.id, name: user.name, role: user.role }, ACCESS_SECRET, { expiresIn: '15m' });
 }
 
 export function signRefreshToken(user: { id: string }) {
